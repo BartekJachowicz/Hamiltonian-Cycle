@@ -18,10 +18,10 @@ def generate_all_permutations(graph):
 
 
 def check_is_hamiltonian_cycle(graph, p):
-    for i in range(0, len(p) - 1):
-        current = p[i]
-        next_one = p[i + 1]
-        if next_one not in graph[current]:
+    for v in range(0, len(p)):
+        current = p[v]
+        next_one = p[(v + 1) % len(p)]
+        if next_one not in graph.graph[current]:
             return False
 
     return True
@@ -37,9 +37,22 @@ def brut_algorithm(graph):
     return hamiltonian_cycles
 
 
+def read_input():
+    n = int(input())
+    d = {}
+    for j in range(n):
+        text = input().split(' ')
+        d[text[0]] = list(text[1:])
+    return d
+
+
 if __name__ == '__main__':
-    # todo read input
-    # todo create instance of Graph
-    # todo BrutAlgorithm(g)
-    # todo print result
-    pass
+    test_cases = int(input())
+
+    for i in range(test_cases):
+        d = read_input()
+        g = Graph(d)
+        cycles = brut_algorithm(g)
+        for c in cycles:
+            print(c)
+        print("End of test", i)
