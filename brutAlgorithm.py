@@ -1,11 +1,5 @@
 import itertools
-
-
-class Graph:
-    graph = {}
-
-    def __init__(self, g):
-        self.graph = g
+from graph import Graph
 
 
 def generate_all_permutations(graph):
@@ -39,11 +33,11 @@ def brut_algorithm(graph):
 
 def read_input():
     n = int(input())
-    d = {}
+    m = {}
     for j in range(n):
         text = input().split(' ')
-        d[text[0]] = list(text[1:])
-    return d
+        m[text[0]] = list(text[1:])
+    return m
 
 
 if __name__ == '__main__':
@@ -53,6 +47,8 @@ if __name__ == '__main__':
         d = read_input()
         g = Graph(d)
         cycles = brut_algorithm(g)
-        for c in cycles:
-            print(c)
-        print("End of test", i)
+        print("Test case:", i)
+        if len(cycles) > 0:
+            print("True", len(cycles))
+        else:
+            print("False")
