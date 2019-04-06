@@ -42,25 +42,3 @@ def inc_exc_algorithm(graph):
     return result
 
 
-def read_input():
-    n = int(input())
-    m = {}
-    for j in range(n):
-        text = input().split(' ')
-        m[text[0]] = list(text[1:])
-    return m
-
-
-if __name__ == '__main__':
-    test_cases = int(input())
-
-    for i in range(test_cases):
-        d = read_input()
-        g = Graph(d)
-        cycles = inc_exc_algorithm(g)
-
-        print("Test case:", i)
-        if cycles > 0:
-            print("True", cycles)
-        else:
-            print("False")
