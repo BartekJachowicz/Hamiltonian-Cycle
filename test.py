@@ -1,16 +1,19 @@
 from graph import Graph
 from brutAlgorithm import brut_algorithm
 from iepAlgorithm import inc_exc_algorithm
+from dynamicAlgorithm import dynamic_algorithm
 from random import randint
 
 
 def test_algorithm(g):
     brut = brut_algorithm(g)
     iep = inc_exc_algorithm(g)
+    dynamic = dynamic_algorithm(g)
 
     print("Test case:", i)
     print_algorithm_result(brut, "BRUT")
     print_algorithm_result(iep, "IEP")
+    print_algorithm_result(dynamic, "DYNAMIC")
 
 
 def print_algorithm_result(result, algorithm):

@@ -1,11 +1,5 @@
-from itertools import chain, combinations
 from graph import Graph
 import numpy as np
-
-
-def power_set(iterable):
-    s = list(iterable)
-    return list(chain.from_iterable(combinations(s, r) for r in range(len(s) + 1)))
 
 
 def create_adjacent_matrix(graph):
@@ -25,7 +19,7 @@ def create_adjacent_matrix(graph):
 
 def inc_exc_algorithm(graph):
     vertex_list = graph.vertex_list()
-    sets = power_set(vertex_list)
+    sets = graph.power_set()
     result = 0
 
     for s in sets:
@@ -40,5 +34,3 @@ def inc_exc_algorithm(graph):
         elif len(m) == 1:
             result += (((-1) ** len(s)) * (m[0][0]**len(vertex_list)))
     return result
-
-
