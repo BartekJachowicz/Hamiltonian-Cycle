@@ -13,7 +13,7 @@ def test_algorithm(g):
     print("Test case:", i)
     print_algorithm_result(brut, "BRUT")
     print_algorithm_result(iep, "IEP")
-    print_algorithm_result(dynamic, "DYNAMIC")
+    print("DYNAMIC:", dynamic)
 
 
 def print_algorithm_result(result, algorithm):
@@ -28,11 +28,11 @@ def generate_test():
     d = {}
     for v in range(vertex_number):
         s = []
-        n = randint(0, vertex_number-1)
+        n = randint(0, vertex_number - 1)
         for j in range(n):
             u = v
             while u == v or u in s:
-                u = randint(0, vertex_number)
+                u = randint(0, vertex_number - 1)
             s.append(u)
         d[v] = s
     print(d)
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     tests_number = randint(1, 10)
 
     for i in range(tests_number):
+        print("Test number:", i)
         g = generate_test()
-
         test_algorithm(g)
 
