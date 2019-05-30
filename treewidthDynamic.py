@@ -85,9 +85,16 @@ def sign(f, X, root):
             if idx1 < idx2 and f[e[0]] > f[e[1]]:
                 power += 1
 
-    return -1**(power % 2)
+    return -1 ** (power % 2)
+def functionInverseImage(function, arg, node):
+    result = []
+    for m in range(len(bags[node])):
+        if function[m] == arg:
+            result.append(bags[node][m])
+    return result
 
-def compute(A, node, i, j, k, tw, matrix, v1, root):
+
+def compute(A, node, i, j, k, matrix, v1, root):
     sDeg = fromDecimal(i, len(bags[node]), 3)
     s1 = fromDecimal(j, len(bags[node]), 2)
     s2 = fromDecimal(k, len(bags[node]), 2)
@@ -128,7 +135,7 @@ def compute(A, node, i, j, k, tw, matrix, v1, root):
             sDeg[idx2] -= 1
             x = toDecimal(sDeg, 3)
             A[node][i][j][k] += A[T[node][0]][x][j][k]
-            print(A[T[node][0]][i][j][k], A[T[node][0]][x][j][k])
+
             # third sum element,
             uPrim, vPrim = [], []
             for m in range(len(bags[node])):
@@ -139,7 +146,6 @@ def compute(A, node, i, j, k, tw, matrix, v1, root):
                     if bags[node][m] == u or bags[node][m] == v:
                         vPrim.append(bags[node][m])
 
-            print(uPrim, vPrim)
             for uBis in uPrim:
                 for vBis in vPrim:
                     # if uBis == vBis:
@@ -148,10 +154,12 @@ def compute(A, node, i, j, k, tw, matrix, v1, root):
                     idx1 = bags[node].index(uBis)
                     idx2 = bags[node].index(vBis)
 
-                    s1[idx1] = 0
-                    s2[idx2] = 0
-                    y = toDecimal(s2, 2)
-                    z = toDecimal(s2, 2)
+                    s1Prim = s1
+                    s2Prim = s2
+                    s1Prim[idx1] = 0
+                    s2Prim[idx2] = 0
+                    y = toDecimal(s1Prim, 2)
+                    z = toDecimal(s2Prim, 2)
                     p = A[T[node][0]][x][y][z]
 
                     it = 0
@@ -159,18 +167,12 @@ def compute(A, node, i, j, k, tw, matrix, v1, root):
                         if e[0] == u and e[1] == v or e[0] == v and e[1] == u:
                             break
                         it += 1
-                    p = p * matrix[u][it] * matrix[v][it]
+                    p = p * matrix[uBis][it] * matrix[vBis][it]
 
                     list1, list2 = [uBis], [vBis]
-                    s1inv = []
-                    for m in range(len(bags[node])):
-                        if s1[m] == 1:
-                            s1inv.append(bags[node][m])
-                    s2inv = []
-                    for m in range(len(bags[node])):
-                        if s2[m] == 1:
-                            s2inv.append(bags[node][m])
-                    p = p * (-1)**(inversion(s1inv, list1, root) + inversion(s2inv, list2, root))
+                    s1inv = functionInverseImage(s1, 1, node)
+                    s2inv = functionInverseImage(s2, 1, node)
+                    p = p * (-1) ** (inversion(s1inv, list1, root) + inversion(s2inv, list2, root))
 
                     A[node][i][j][k] += p
         else:
@@ -194,52 +196,44 @@ def compute(A, node, i, j, k, tw, matrix, v1, root):
     elif labels[node][0] == JOIN_NODE:
         print(JOIN_NODE, node)
         sumX = 0
-        maxSdeg = 3**len(bags[node])
-        maxS = 2**len(bags[node])
+        maxSdeg = 3 ** len(bags[node])
+        maxS = 2 ** len(bags[node])
         for s_d in range(maxSdeg):
             for s_1 in range(maxS):
                 for s_2 in range(maxS):
                     p = A[T[node][0]][s_d][s_1][s_2]
                     p *= A[T[node][1]][maxSdeg - s_d - 1][maxS - s_1 - 1][maxS - s_2 - 1]
-                    s1Y = fromDecimal(s_1, tw, 2)
-                    s2Y = fromDecimal(s_2, tw, 2)
-                    s1Yinv = []
-                    for m in range(len(bags[node])):
-                        if s1Y[m] == 1:
-                            s1Yinv.append(bags[node][m])
-                    s2Yinv = []
-                    for m in range(len(bags[node])):
-                        if s2Y[m] == 1:
-                            s2Yinv.append(bags[node][m])
-                    s1Z = fromDecimal(maxS - s_1 - 1, tw, 2)
-                    s2Z = fromDecimal(maxS - s_2 - 1, tw, 2)
-                    s1Zinv = []
-                    for m in range(len(bags[node])):
-                        if s1Z[m] == 1:
-                            s1Zinv.append(bags[node][m])
-                    s2Zinv = []
-                    for m in range(len(bags[node])):
-                        if s2Z[m] == 1:
-                            s2Zinv.append(bags[node][m])
+
+                    s1Y = fromDecimal(s_1, len(bags[node]), 2)
+                    s2Y = fromDecimal(s_2, len(bags[node]), 2)
+                    s1Yinv = functionInverseImage(s1Y, 1, node)
+                    s2Yinv = functionInverseImage(s2Y, 1, node)
+
+                    s1Z = fromDecimal(maxS - s_1 - 1, len(bags[node]), 2)
+                    s2Z = fromDecimal(maxS - s_2 - 1, len(bags[node]), 2)
+                    s1Zinv = functionInverseImage(s1Z, 1, node)
+                    s2Zinv = functionInverseImage(s2Z, 1, node)
+
                     p = p * (-1) ** (inversion(s1Yinv, s1Zinv, root) + inversion(s2Yinv, s2Zinv, root))
                     sumX += p
         A[node][i][j][k] = sumX
 
     return A[node][i][j][k]
 
+
 def dynamic(root, tw):
     matrix = creteMatrix(G, Tree, labels, root)
-    v1 = 0
+    v1 = 2
 
-    A = [[[[0 for k in range(2**tw)] for j in range(2**tw)] for i in range(3**tw)] for x in range(len(Tree))]
+    A = [[[[0 for k in range(2 ** tw)] for j in range(2 ** tw)] for i in range(3 ** tw)] for x in range(len(Tree))]
 
     for node in reversed(list(T.keys())):
         # Todo napisac zeby to robic dfsem, najpierw dzieci, wracajac ja
         print("NODE: ", node, ", BAG[NODE]: ", bags[node], sep="")
-        for i in range(3**len(bags[node])):
+        for i in range(3 ** len(bags[node])):
             for j in range(2 ** len(bags[node])):
                 for k in range(2 ** len(bags[node])):
-                    A[node][i][j][k] = compute(A, node, i, j, k, tw, matrix, v1, root)
+                    A[node][i][j][k] = compute(A, node, i, j, k, matrix, v1, root)
                     print("MATRIX A[", node, "][", i, "][", j, "][", k, "]: ", A[node][i][j][k], sep="")
                     print()
         print("--------------------------")
@@ -291,7 +285,7 @@ if __name__ == '__main__':
             edges_to_add.append((key, edge))
     Tree.add_edges_from(edges_to_add)
 
-    G = nx.DiGraph()
+    G = nx.Graph()
     G.add_node(0)
     G.add_node(1)
     G.add_node(2)
