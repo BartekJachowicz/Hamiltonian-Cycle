@@ -25,6 +25,7 @@ def fromDecimal(n, tw, base):
 def creteMatrix(G, Tree, labels, root):
     matrix = [[0 for x in range(len(G.edges()))] for y in range(len(G.nodes()))]
     post = postOrderVertex(Tree, labels, root)
+    # print(post)
     for v in G.nodes():
         i = 0
         for e in G.edges():
@@ -100,11 +101,11 @@ def compute(A, node, i, j, k, matrix, v1, root):
     s2 = fromDecimal(k, len(bags[node]), 2)
 
     if labels[node][0] == LEAF_NODE:
-        print(LEAF_NODE, node)
+        # print(LEAF_NODE, node)
         A[node][i][j][k] = 1
     elif labels[node][0] == INTRODUCE_VERTEX_NODE:
-        print(INTRODUCE_VERTEX_NODE, node, ", int vertex:", labels[node][1])
-        print("SDEG: ", sDeg, ", S1: ", s1, ", S2: ", s2, sep="")
+        # print(INTRODUCE_VERTEX_NODE, node, ", int vertex:", labels[node][1])
+        # print("SDEG: ", sDeg, ", S1: ", s1, ", S2: ", s2, sep="")
         v = labels[node][1]
         idx = bags[node].index(v)
         if sDeg[idx] == 0 and s1[idx] == 0 and s2[idx] == 0:
@@ -115,14 +116,14 @@ def compute(A, node, i, j, k, matrix, v1, root):
             y = toDecimal(s1, 2)
             s2.pop(idx)
             z = toDecimal(s2, 2)
-            print("x:", x, "y:", y, "z:", z)
+            # print("x:", x, "y:", y, "z:", z)
             A[node][i][j][k] = A[T[node][0]][x][y][z]
         else:
             A[node][i][j][k] = 0
     elif labels[node][0] == INTRODUCE_EDGE_NODE:
         u, v = labels[node][1]
-        print(INTRODUCE_EDGE_NODE, node, ", edge: (", u, ",", v, ")")
-        print("SDEG: ", sDeg, ", S1: ", s1, ", S2: ", s2, sep="")
+        # print(INTRODUCE_EDGE_NODE, node, ", edge: (", u, ",", v, ")")
+        # print("SDEG: ", sDeg, ", S1: ", s1, ", S2: ", s2, sep="")
         idx1 = bags[node].index(u)
         idx2 = bags[node].index(v)
 
@@ -178,7 +179,7 @@ def compute(A, node, i, j, k, matrix, v1, root):
         else:
             A[node][i][j][k] = A[T[node][0]][i][j][k]
     elif labels[node][0] == FORGET_NODE:
-        print(FORGET_NODE, node)
+        # print(FORGET_NODE, node)
         v = labels[node][1]
         idx = bags[T[node][0]].index(v)
         if v != v1:
@@ -194,23 +195,22 @@ def compute(A, node, i, j, k, matrix, v1, root):
         z = toDecimal(s2, 2)
         A[node][i][j][k] = A[T[node][0]][x][y][z]
     elif labels[node][0] == JOIN_NODE:
-        print(JOIN_NODE, node)
+        # print(JOIN_NODE, node)
+        # print(i, j, k)
         sumX = 0
-        maxSdeg = 3 ** len(bags[node])
-        maxS = 2 ** len(bags[node])
-        for s_d in range(maxSdeg):
-            for s_1 in range(maxS):
-                for s_2 in range(maxS):
+        for s_d in range(i+1):
+            for s_1 in range(j+1):
+                for s_2 in range(k+1):
                     p = A[T[node][0]][s_d][s_1][s_2]
-                    p *= A[T[node][1]][maxSdeg - s_d - 1][maxS - s_1 - 1][maxS - s_2 - 1]
+                    p *= A[T[node][1]][i - s_d][j - s_1][k - s_2]
 
                     s1Y = fromDecimal(s_1, len(bags[node]), 2)
                     s2Y = fromDecimal(s_2, len(bags[node]), 2)
                     s1Yinv = functionInverseImage(s1Y, 1, node)
                     s2Yinv = functionInverseImage(s2Y, 1, node)
 
-                    s1Z = fromDecimal(maxS - s_1 - 1, len(bags[node]), 2)
-                    s2Z = fromDecimal(maxS - s_2 - 1, len(bags[node]), 2)
+                    s1Z = fromDecimal(j - s_1, len(bags[node]), 2)
+                    s2Z = fromDecimal(k - s_2, len(bags[node]), 2)
                     s1Zinv = functionInverseImage(s1Z, 1, node)
                     s2Zinv = functionInverseImage(s2Z, 1, node)
 
@@ -234,62 +234,167 @@ def dynamic(root, tw):
             for j in range(2 ** len(bags[node])):
                 for k in range(2 ** len(bags[node])):
                     A[node][i][j][k] = compute(A, node, i, j, k, matrix, v1, root)
-                    print("MATRIX A[", node, "][", i, "][", j, "][", k, "]: ", A[node][i][j][k], sep="")
-                    print()
-        print("--------------------------")
-        print("A[", node, "]:", A[node])
-        print("--------------------------", "\n")
+                    # print("MATRIX A[", node, "][", i, "][", j, "][", k, "]: ", A[node][i][j][k], sep="")
+                    # print()
+        # print("--------------------------")
+        # print("A[", node, "]:", A[node])
+        # print("--------------------------", "\n")
 
     return A[root][0][0][0] / len(G.nodes())
 
 
 if __name__ == '__main__':
-    T = {9: [4],
-         4: [3],
-         3: [5],
-         5: [2],
-         2: [6],
-         6: [1],
-         1: [7],
-         7: [0],
-         0: [8],
-         8: []}
+    T = {27: [0],
+         0: [1]
+        , 1: [2]
+        , 2: [3]
+        , 3: [4]
+        , 4: [5]
+        , 5: [6]
+        , 6: [7]
+        , 7: [8]
+        , 8: [9]
+        , 9: [10]
+        , 10: [11, 19]
+        , 11: [12]
+        , 12: [13]
+        , 13: [14]
+        , 14: [15]
+        , 15: [16]
+        , 16: [17]
+        , 17: [18]
+        , 18: [19]
+        , 19: [20]
+        , 20: [21]
+        , 21: [22]
+        , 22: [23]
+        , 23: [24]
+        , 24: [25]
+        , 25: [26]
+        , 26: []
+         }
 
-    bags = {9: [],
-            4: [2],
-            3: [1, 2],
-            5: [1, 2],
-            2: [0, 1, 2],
-            6: [0, 1, 2],
-            1: [0, 1],
-            7: [0, 1],
-            0: [0],
-            8: []}
+    bags = {27: ([]),
+            0: ([0])
+        , 1: ([0, 1])
+        , 2: ([0, 1])
+        , 3: ([1])
+        , 4: ([1, 2])
+        , 5: ([1, 2])
+        , 6: ([3, 1, 2])
+        , 7: ([3, 1, 2])
+        , 8: ([1, 2, 3, 5])
+        , 9: ([1, 2, 3, 5])
+        , 10: ([1, 2, 3, 5])
+        , 11: ([1, 2, 3, 5])
+        , 12: ([2, 3, 5])
+        , 13: ([2, 5])
+        , 14: ([2, 4, 5])
+        , 15: ([2, 4, 5])
+        , 16: ([4, 5])
+        , 17: ([4, 5])
+        , 18: ([5])
+        , 19: ([1, 2, 3, 5])
+        , 20: ([2, 3, 5])
+        , 21: ([3, 5])
+        , 22: ([3, 5, 6])
+        , 23: ([3, 5, 6])
+        , 24: ([5, 6])
+        , 25: ([5, 6])
+        , 26: ([6])
+            }
 
-    labels = {9: (FORGET_NODE, 2),
-              4: (FORGET_NODE, 1),
-              3: (INTRODUCE_EDGE_NODE, (1, 2)),
-              5: (FORGET_NODE, 0),
-              2: (INTRODUCE_EDGE_NODE, (0, 2)),
-              6: (INTRODUCE_VERTEX_NODE, 2),
-              1: (INTRODUCE_EDGE_NODE, (0, 1)),
-              7: (INTRODUCE_VERTEX_NODE, 1),
-              0: (INTRODUCE_VERTEX_NODE, 0),
-              8: (LEAF_NODE, -1)}
+    labels = {27: (FORGET_NODE, 0),
+              0: (FORGET_NODE, 1)
+        , 1: (INTRODUCE_EDGE_NODE, (0, 1))
+        , 2: (INTRODUCE_VERTEX_NODE, 0)
+        , 3: (FORGET_NODE, 2)
+        , 4: (INTRODUCE_EDGE_NODE, (1, 2))
+        , 5: (FORGET_NODE, 3)
+        , 6: (INTRODUCE_EDGE_NODE, (1, 3))
+        , 7: (FORGET_NODE, 5)
+        , 8: (INTRODUCE_EDGE_NODE, (2, 5))
+        , 9: (INTRODUCE_EDGE_NODE, (3, 5))
+        , 10: (JOIN_NODE, 0)
+        , 11: (INTRODUCE_VERTEX_NODE, 1)
+        , 12: (INTRODUCE_VERTEX_NODE, 3)
+        , 13: (FORGET_NODE, 4)
+        , 14: (INTRODUCE_EDGE_NODE, (2, 4))
+        , 15: (INTRODUCE_VERTEX_NODE, 2)
+        , 16: (INTRODUCE_EDGE_NODE, (4, 5))
+        , 17: (INTRODUCE_VERTEX_NODE, 4)
+        , 18: (LEAF_NODE, 5)
+        , 19: (INTRODUCE_VERTEX_NODE, 1)
+        , 20: (INTRODUCE_VERTEX_NODE, 2)
+        , 21: (FORGET_NODE, 6)
+        , 22: (INTRODUCE_EDGE_NODE, (3, 6))
+        , 23: (INTRODUCE_VERTEX_NODE, 3)
+        , 24: (INTRODUCE_EDGE_NODE, (5, 6))
+        , 25: (INTRODUCE_VERTEX_NODE, 5)
+        , 26: (LEAF_NODE, 6)
+              }
+
+    G = nx.Graph()
+    for i in range(7):
+        G.add_node(i)
+    G.add_edges_from([(0, 1), (1, 2), (1, 3), (2, 4), (2, 5), (3, 5), (3, 6), (4, 5), (5, 6)])
 
     edges_to_add = []
     Tree = nx.DiGraph()
-    for key in T.keys():
-        Tree.add_node(key, bag=bags[key])
-        for edge in T[key]:
-            edges_to_add.append((key, edge))
+    for x in T.keys():
+        Tree.add_node(x, bag=bags[x])
+        # print(x, Tree.node[x][bag])
+        for y in T[x]:
+            edges_to_add.append((x, y))
     Tree.add_edges_from(edges_to_add)
 
-    G = nx.Graph()
-    G.add_node(0)
-    G.add_node(1)
-    G.add_node(2)
-    G.add_edge(0, 1)
-    G.add_edge(1, 2)
-    G.add_edge(2, 0)
-    print("Hamilton cycles number:", dynamic(9, 3))
+    print(dynamic(27, 4))
+    # T = {9: [4],
+    #      4: [3],
+    #      3: [5],
+    #      5: [2],
+    #      2: [6],
+    #      6: [1],
+    #      1: [7],
+    #      7: [0],
+    #      0: [8],
+    #      8: []}
+    #
+    # bags = {9: [],
+    #         4: [2],
+    #         3: [1, 2],
+    #         5: [1, 2],
+    #         2: [0, 1, 2],
+    #         6: [0, 1, 2],
+    #         1: [0, 1],
+    #         7: [0, 1],
+    #         0: [0],
+    #         8: []}
+    #
+    # labels = {9: (FORGET_NODE, 2),
+    #           4: (FORGET_NODE, 1),
+    #           3: (INTRODUCE_EDGE_NODE, (1, 2)),
+    #           5: (FORGET_NODE, 0),
+    #           2: (INTRODUCE_EDGE_NODE, (0, 2)),
+    #           6: (INTRODUCE_VERTEX_NODE, 2),
+    #           1: (INTRODUCE_EDGE_NODE, (0, 1)),
+    #           7: (INTRODUCE_VERTEX_NODE, 1),
+    #           0: (INTRODUCE_VERTEX_NODE, 0),
+    #           8: (LEAF_NODE, -1)}
+    #
+    # edges_to_add = []
+    # Tree = nx.DiGraph()
+    # for key in T.keys():
+    #     Tree.add_node(key, bag=bags[key])
+    #     for edge in T[key]:
+    #         edges_to_add.append((key, edge))
+    # Tree.add_edges_from(edges_to_add)
+    #
+    # G = nx.Graph()
+    # G.add_node(0)
+    # G.add_node(1)
+    # G.add_node(2)
+    # G.add_edge(0, 1)
+    # G.add_edge(1, 2)
+    # G.add_edge(2, 0)
+    # print("Hamilton cycles number:", dynamic(9, 3))
