@@ -2,6 +2,8 @@ from graph import Graph
 from brutAlgorithm import brut_algorithm
 from iepAlgorithm import inc_exc_algorithm
 from dynamicAlgorithm import dynamic_algorithm
+from naiveDynamic import naiveDynamic
+from rankBasedApproach import rankBasedDynamic
 from random import randint
 
 
@@ -9,18 +11,14 @@ def test_algorithm(g):
     brut = brut_algorithm(g)
     iep = inc_exc_algorithm(g)
     dynamic = dynamic_algorithm(g)
+    # tw_Dynamic = naiveDynamic(0)
+    # rb_dynamic = rankBasedDynamic(0)
 
-    print("Test case:", i)
-    print_algorithm_result(brut, "BRUT")
-    print_algorithm_result(iep, "IEP")
+    print("BRUT:", brut)
+    print("IEP:", iep)
     print("DYNAMIC:", dynamic)
-
-
-def print_algorithm_result(result, algorithm):
-    if result > 0:
-        print(algorithm, ":", "True", result)
-    else:
-        print(algorithm, ":", "False")
+    # print("NAIVE TREEWIDTH DYNAMIC:", tw_dynamic)
+    # print("RANK BASED APPROACH:", rb_dynamic)
 
 
 def generate_test():
@@ -35,7 +33,6 @@ def generate_test():
                 u = randint(0, vertex_number - 1)
             s.append(u)
         d[v] = s
-    print(d)
     return Graph(d)
 
 
@@ -46,4 +43,5 @@ if __name__ == '__main__':
         print("Test number:", i)
         g = generate_test()
         test_algorithm(g)
+        print()
 

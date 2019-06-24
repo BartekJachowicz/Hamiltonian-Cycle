@@ -142,7 +142,7 @@ def memoisation(t, hc):
     return hc[t]
 
 
-def dynamic(root):
+def naiveDynamic(root):
     # for every node t store list of pairs (f, M) where f:B_t -> {0, 1, 2} and M is matching on f<-(1)
     # f is represented as dict {key (vertex): value (0, 1, 2)}
     # M is represented as list of tuples of size 2, where tuple is pair of matched vertices
@@ -262,4 +262,4 @@ if __name__ == '__main__':
             edges_to_add.append((x, y))
     Tree.add_edges_from(edges_to_add)
 
-    print(dynamic(27))
+    print(naiveDynamic(27))
