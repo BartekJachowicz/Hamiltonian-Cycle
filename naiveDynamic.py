@@ -21,7 +21,7 @@ def matchingJoin(u, visited, p1, p2, cycle, one):
 
     return u, cycle, visited
 
-def memoisation(t, hc, v1):
+def memoisation(t, hc):
     if t in hc.keys():
         return hc[t]
 
@@ -29,7 +29,7 @@ def memoisation(t, hc, v1):
         v = labels[t][1]
         child = T[t][0]
 
-        childResult = memoisation(child, hc, v1)
+        childResult = memoisation(child, hc)
         hc[t] = []
         for pair in childResult:
             pair[0].update({v: 0})
@@ -40,7 +40,7 @@ def memoisation(t, hc, v1):
         v = labels[t][1]
         child = T[t][0]
 
-        childResult = memoisation(child, hc, v1)
+        childResult = memoisation(child, hc)
         hc[t] = []
 
         for pair in childResult:
@@ -50,10 +50,9 @@ def memoisation(t, hc, v1):
 
     elif labels[t][0] == INTRODUCE_EDGE_NODE:
         u, v = labels[t][1]
-        G.remove_edge(u, v)
         child = T[t][0]
 
-        childResult = memoisation(child, hc, v1)
+        childResult = memoisation(child, hc)
         childResultPrim = []
         for p in childResult:
             pair = deepcopy(p)
@@ -93,13 +92,12 @@ def memoisation(t, hc, v1):
         for pair in childResultPrim:
             if pair not in hc[t]:
                 hc[t].append(pair)
-        G.add_edge(u, v)
 
     elif labels[t][0] == JOIN_NODE:
         u, v = T[t][0], T[t][1]
 
-        firstChildResult = memoisation(u, hc, v1)
-        secondChildResult = memoisation(v, hc, v1)
+        firstChildResult = memoisation(u, hc)
+        secondChildResult = memoisation(v, hc)
 
         hc[t] = []
         for p1 in firstChildResult:
@@ -145,13 +143,11 @@ def memoisation(t, hc, v1):
 
 
 def dynamic(root):
-    v1 = T[0]
-
     # for every node t store list of pairs (f, M) where f:B_t -> {0, 1, 2} and M is matching on f<-(1)
     # f is represented as dict {key (vertex): value (0, 1, 2)}
     # M is represented as list of tuples of size 2, where tuple is pair of matched vertices
     hc = {}
-    result = memoisation(root, hc, v1)
+    result = memoisation(root, hc)
     return len(result) > 0
 
 
