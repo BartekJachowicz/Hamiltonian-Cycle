@@ -7,7 +7,8 @@ FORGET_NODE, JOIN_NODE, BAG = "Forget node", "Join node", "bag"
 
 def matchingJoin(u, visited, m1, m2, cycle, one):
     while True:
-        visited[u] = True
+        if u in visited:
+            visited[u] = True
         if one and (u in m2.keys() and m1[u] != u):
             u = m2[u]
             one = False
@@ -17,7 +18,7 @@ def matchingJoin(u, visited, m1, m2, cycle, one):
         else:
             break
 
-        if visited[u]:
+        if u in visited and visited[u]:
             cycle = True
 
     return u, cycle, visited
@@ -172,7 +173,7 @@ def memoisation(t, s, hc):
         t_1, t_2 = T[t][0], T[t][1]
 
         hc[(t, s)] = []
-        for i in range(3**len(bags[t])):
+        for i in range(3**len(bags[s])):
             l, r = [], []
             nums = fromDecimal(i, len(s), 3)
             j = 0
@@ -191,9 +192,7 @@ def memoisation(t, s, hc):
                     cycle = False
 
                     inv = functionInverse(s, 1)
-                    for v in m1:
-                        visited.update({v: False})
-                    for v in m2:
+                    for v in inv:
                         visited.update({v: False})
 
                     for v in visited.keys():
@@ -233,7 +232,7 @@ def memoisation(t, s, hc):
     return hc[(t, s)]
 
 
-def rankBasedDynamic(root):
+def rankBasedDynamic(root, treeDecomposition, labels):
     # for every node t store list of pairs (f, M) where f:B_t -> {0, 1, 2} and M is matching on f<-(1)
     # f is represented as dict {key (vertex): value (0, 1, 2)}
     # M is represented as list of tuples of size 2, where tuple is pair of matched vertices

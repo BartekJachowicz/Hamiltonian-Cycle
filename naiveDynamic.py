@@ -6,7 +6,8 @@ FORGET_NODE, JOIN_NODE, BAG = "Forget node", "Join node", "bag"
 
 def matchingJoin(u, visited, p1, p2, cycle, one):
     while True:
-        visited[u] = True
+        if u in visited:
+            visited[u] = True
         if one and p2[0][u] == 1:
             u = p2[1][u]
             one = False
@@ -16,20 +17,20 @@ def matchingJoin(u, visited, p1, p2, cycle, one):
         else:
             break
 
-        if visited[u]:
+        if u in visited and visited[u]:
             cycle = True
 
     return u, cycle, visited
 
-def memoisation(t, hc):
+def memoisation(t, hc, T, labels):
     if t in hc.keys():
         return hc[t]
 
     if labels[t][0] == INTRODUCE_VERTEX_NODE:
         v = labels[t][1]
-        child = T[t][0]
+        child = [k for k in T.neighbors(t)][0]
 
-        childResult = memoisation(child, hc)
+        childResult = memoisation(child, hc, T, labels)
         hc[t] = []
         for pair in childResult:
             pair[0].update({v: 0})
@@ -38,9 +39,9 @@ def memoisation(t, hc):
 
     elif labels[t][0] == FORGET_NODE:
         v = labels[t][1]
-        child = T[t][0]
+        child = [i for i in T.neighbors(t)][0]
 
-        childResult = memoisation(child, hc)
+        childResult = memoisation(child, hc, T, labels)
         hc[t] = []
 
         for pair in childResult:
@@ -50,9 +51,9 @@ def memoisation(t, hc):
 
     elif labels[t][0] == INTRODUCE_EDGE_NODE:
         u, v = labels[t][1]
-        child = T[t][0]
+        child = [k for k in T.neighbors(t)][0]
 
-        childResult = memoisation(child, hc)
+        childResult = memoisation(child, hc, T, labels)
         childResultPrim = []
         for p in childResult:
             pair = deepcopy(p)
@@ -94,10 +95,11 @@ def memoisation(t, hc):
                 hc[t].append(pair)
 
     elif labels[t][0] == JOIN_NODE:
-        u, v = T[t][0], T[t][1]
+        u = [k for k in T.neighbors(t)][0]
+        v = [k for k in T.neighbors(t)][1]
 
-        firstChildResult = memoisation(u, hc)
-        secondChildResult = memoisation(v, hc)
+        firstChildResult = memoisation(u, hc, T, labels)
+        secondChildResult = memoisation(v, hc, T, labels)
 
         hc[t] = []
         for p1 in firstChildResult:
@@ -106,13 +108,17 @@ def memoisation(t, hc):
                 visited = {}
                 cycle = False
 
-                for v in p1[0].keys():
-                    deg = p1[0][v] + p2[0][v]
+                flag = True
+                for w in p1[0].keys():
+                    deg = p1[0][w] + p2[0][w]
                     if deg > 2:
-                        continue
+                        flag = False
+                        break
 
-                    p[0].update({v: deg})
-                    visited.update({v: False})
+                    p[0].update({w: deg})
+                    visited.update({w: False})
+                if not flag:
+                    continue
 
                 for v in visited.keys():
                     if visited[v]:
@@ -142,124 +148,124 @@ def memoisation(t, hc):
     return hc[t]
 
 
-def naiveDynamic(root):
-    # for every node t store list of pairs (f, M) where f:B_t -> {0, 1, 2} and M is matching on f<-(1)
+def naiveDynamic(root, treeDecomposition, labels):
+    # For every node t store list of pairs (f, M) where f:B_t -> {0, 1, 2} and M is matching on f<-(1)
     # f is represented as dict {key (vertex): value (0, 1, 2)}
     # M is represented as list of tuples of size 2, where tuple is pair of matched vertices
     hc = {}
-    result = memoisation(root, hc)
+    result = memoisation(root, hc, treeDecomposition, labels)
     return len(result) > 0
 
 
-if __name__ == '__main__':
-    T = {27: [0],
-         0: [1],
-         1: [2],
-         2: [3],
-         3: [4],
-         4: [5],
-         5: [6],
-         6: [7],
-         7: [8],
-         8: [9],
-         9: [10],
-         10: [11, 19],
-         11: [12],
-         12: [13],
-         13: [14],
-         14: [15],
-         15: [16],
-         16: [17],
-         17: [18],
-         18: [28],
-         28: [],
-         19: [20],
-         20: [21],
-         21: [22],
-         22: [23],
-         23: [24],
-         24: [25],
-         25: [26],
-         26: [29],
-         29: []
-         }
-
-    bags = {27: frozenset([]),
-            0: frozenset([0]),
-            1: frozenset([0, 1]),
-            2: frozenset([0, 1]),
-            3: frozenset([1]),
-            4: frozenset([1, 2]),
-            5: frozenset([1, 2]),
-            6: frozenset([3, 1, 2]),
-            7: frozenset([3, 1, 2]),
-            8: frozenset([1, 2, 3, 5]),
-            9: frozenset([1, 2, 3, 5]),
-            10: frozenset([1, 2, 3, 5]),
-            11: frozenset([1, 2, 3, 5]),
-            12: frozenset([2, 3, 5]),
-            13: frozenset([2, 5]),
-            14: frozenset([2, 4, 5]),
-            15: frozenset([2, 4, 5]),
-            16: frozenset([4, 5]),
-            17: frozenset([4, 5]),
-            18: frozenset([5]),
-            28: frozenset([]),
-            19: frozenset([1, 2, 3, 5]),
-            20: frozenset([2, 3, 5]),
-            21: frozenset([3, 5]),
-            22: frozenset([3, 5, 6]),
-            23: frozenset([3, 5, 6]),
-            24: frozenset([5, 6]),
-            25: frozenset([5, 6]),
-            26: frozenset([6]),
-            29: frozenset([])
-            }
-
-    labels = {27: (FORGET_NODE, 0),
-              0: (FORGET_NODE, 1),
-              1: (INTRODUCE_EDGE_NODE, (0, 1)),
-              2: (INTRODUCE_VERTEX_NODE, 0),
-              3: (FORGET_NODE, 2),
-              4: (INTRODUCE_EDGE_NODE, (1, 2)),
-              5: (FORGET_NODE, 3),
-              6: (INTRODUCE_EDGE_NODE, (1, 3)),
-              7: (FORGET_NODE, 5),
-              8: (INTRODUCE_EDGE_NODE, (2, 5)),
-              9: (INTRODUCE_EDGE_NODE, (3, 5)),
-              10: (JOIN_NODE, 0),
-              11: (INTRODUCE_VERTEX_NODE, 1),
-              12: (INTRODUCE_VERTEX_NODE, 3),
-              13: (FORGET_NODE, 4),
-              14: (INTRODUCE_EDGE_NODE, (2, 4)),
-              15: (INTRODUCE_VERTEX_NODE, 2),
-              16: (INTRODUCE_EDGE_NODE, (4, 5)),
-              17: (INTRODUCE_VERTEX_NODE, 4),
-              18: (INTRODUCE_VERTEX_NODE, 5),
-              28: (LEAF_NODE, -1),
-              19: (INTRODUCE_VERTEX_NODE, 1),
-              20: (INTRODUCE_VERTEX_NODE, 2),
-              21: (FORGET_NODE, 6),
-              22: (INTRODUCE_EDGE_NODE, (3, 6)),
-              23: (INTRODUCE_VERTEX_NODE, 3),
-              24: (INTRODUCE_EDGE_NODE, (5, 6)),
-              25: (INTRODUCE_VERTEX_NODE, 5),
-              26: (INTRODUCE_VERTEX_NODE, 6),
-              29: (LEAF_NODE, -1)
-              }
-
-    G = nx.Graph()
-    for i in range(7):
-        G.add_node(i)
-    G.add_edges_from([(0, 1), (1, 2), (1, 3), (2, 4), (2, 5), (3, 5), (3, 6), (4, 5), (5, 6)])
-
-    edges_to_add = []
-    Tree = nx.DiGraph()
-    for x in T.keys():
-        Tree.add_node(x, bag=bags[x])
-        # print(x, Tree.node[x][bag])
-        for y in T[x]:
-            edges_to_add.append((x, y))
-    Tree.add_edges_from(edges_to_add)
-
-    print(naiveDynamic(27))
+# if __name__ == '__main__':
+#     T = {27: [0],
+#          0: [1],
+#          1: [2],
+#          2: [3],
+#          3: [4],
+#          4: [5],
+#          5: [6],
+#          6: [7],
+#          7: [8],
+#          8: [9],
+#          9: [10],
+#          10: [11, 19],
+#          11: [12],
+#          12: [13],
+#          13: [14],
+#          14: [15],
+#          15: [16],
+#          16: [17],
+#          17: [18],
+#          18: [28],
+#          28: [],
+#          19: [20],
+#          20: [21],
+#          21: [22],
+#          22: [23],
+#          23: [24],
+#          24: [25],
+#          25: [26],
+#          26: [29],
+#          29: []
+#          }
+#
+#     bags = {27: frozenset([]),
+#             0: frozenset([0]),
+#             1: frozenset([0, 1]),
+#             2: frozenset([0, 1]),
+#             3: frozenset([1]),
+#             4: frozenset([1, 2]),
+#             5: frozenset([1, 2]),
+#             6: frozenset([3, 1, 2]),
+#             7: frozenset([3, 1, 2]),
+#             8: frozenset([1, 2, 3, 5]),
+#             9: frozenset([1, 2, 3, 5]),
+#             10: frozenset([1, 2, 3, 5]),
+#             11: frozenset([1, 2, 3, 5]),
+#             12: frozenset([2, 3, 5]),
+#             13: frozenset([2, 5]),
+#             14: frozenset([2, 4, 5]),
+#             15: frozenset([2, 4, 5]),
+#             16: frozenset([4, 5]),
+#             17: frozenset([4, 5]),
+#             18: frozenset([5]),
+#             28: frozenset([]),
+#             19: frozenset([1, 2, 3, 5]),
+#             20: frozenset([2, 3, 5]),
+#             21: frozenset([3, 5]),
+#             22: frozenset([3, 5, 6]),
+#             23: frozenset([3, 5, 6]),
+#             24: frozenset([5, 6]),
+#             25: frozenset([5, 6]),
+#             26: frozenset([6]),
+#             29: frozenset([])
+#             }
+#
+#     labels = {27: (FORGET_NODE, 0),
+#               0: (FORGET_NODE, 1),
+#               1: (INTRODUCE_EDGE_NODE, (0, 1)),
+#               2: (INTRODUCE_VERTEX_NODE, 0),
+#               3: (FORGET_NODE, 2),
+#               4: (INTRODUCE_EDGE_NODE, (1, 2)),
+#               5: (FORGET_NODE, 3),
+#               6: (INTRODUCE_EDGE_NODE, (1, 3)),
+#               7: (FORGET_NODE, 5),
+#               8: (INTRODUCE_EDGE_NODE, (2, 5)),
+#               9: (INTRODUCE_EDGE_NODE, (3, 5)),
+#               10: (JOIN_NODE, 0),
+#               11: (INTRODUCE_VERTEX_NODE, 1),
+#               12: (INTRODUCE_VERTEX_NODE, 3),
+#               13: (FORGET_NODE, 4),
+#               14: (INTRODUCE_EDGE_NODE, (2, 4)),
+#               15: (INTRODUCE_VERTEX_NODE, 2),
+#               16: (INTRODUCE_EDGE_NODE, (4, 5)),
+#               17: (INTRODUCE_VERTEX_NODE, 4),
+#               18: (INTRODUCE_VERTEX_NODE, 5),
+#               28: (LEAF_NODE, -1),
+#               19: (INTRODUCE_VERTEX_NODE, 1),
+#               20: (INTRODUCE_VERTEX_NODE, 2),
+#               21: (FORGET_NODE, 6),
+#               22: (INTRODUCE_EDGE_NODE, (3, 6)),
+#               23: (INTRODUCE_VERTEX_NODE, 3),
+#               24: (INTRODUCE_EDGE_NODE, (5, 6)),
+#               25: (INTRODUCE_VERTEX_NODE, 5),
+#               26: (INTRODUCE_VERTEX_NODE, 6),
+#               29: (LEAF_NODE, -1)
+#               }
+#
+#     G = nx.Graph()
+#     for i in range(7):
+#         G.add_node(i)
+#     G.add_edges_from([(0, 1), (1, 2), (1, 3), (2, 4), (2, 5), (3, 5), (3, 6), (4, 5), (5, 6)])
+#
+#     edges_to_add = []
+#     Tree = nx.DiGraph()
+#     for x in T.keys():
+#         Tree.add_node(x, bag=bags[x])
+#         # print(x, Tree.node[x][bag])
+#         for y in T[x]:
+#             edges_to_add.append((x, y))
+#     Tree.add_edges_from(edges_to_add)
+#
+#     print(naiveDynamic(27))
