@@ -19,6 +19,7 @@ def matchingJoin(u, visited, p1, p2, cycle, one):
 
         if u in visited and visited[u]:
             cycle = True
+            break
 
     return u, cycle, visited
 
@@ -104,6 +105,10 @@ def memoisation(t, hc, T, labels):
         hc[t] = []
         for p1 in firstChildResult:
             for p2 in secondChildResult:
+                if p1 == p2:
+                    hc[t].append(p1)
+                    continue
+
                 p = ({}, {})
                 visited = {}
                 cycle = False
@@ -125,12 +130,18 @@ def memoisation(t, hc, T, labels):
                         continue
 
                     if p1[0][v] == 1 and p2[0][v] == 1:
-                        u, cycle, visited = matchingJoin(p1[1][v], visited, p1, p2, cycle, True)
-                        w, cycle, visited = matchingJoin(p2[1][v], visited, p1, p2, cycle, False)
-                        p[1].update({u: w, w: u})
+                        if p1[1][v] != p2[1][v]:
+                            u, cycle, visited = matchingJoin(p1[1][v], visited, p1, p2, cycle, True)
+                            w, cycle, visited = matchingJoin(p2[1][v], visited, p1, p2, cycle, False)
+                            p[1].update({u: w, w: u})
+                        else:
+                            visited[p1[1][v]] = True
+                            p[1].update({v: p1[1][v], p1[1][v]: v})
+
                     elif p1[0][v] == 1 and p2[0][v] == 0:
                         u, cycle, visited = matchingJoin(p1[1][v], visited, p1, p2, cycle, True)
                         p[1].update({u: v, v: u})
+
                     elif p1[0][v] == 0 and p2[0][v] == 1:
                         u, cycle, visited = matchingJoin(p2[1][v], visited, p1, p2, cycle, False)
                         p[1].update({u: v, v: u})
@@ -138,13 +149,13 @@ def memoisation(t, hc, T, labels):
                     if cycle:
                         break
 
-                if not cycle:
+                if not cycle and p not in hc[t]:
                     hc[t].append(p)
 
     elif labels[t][0] == LEAF_NODE:
         hc[t] = [({}, {})]
 
-    print(t, labels[t][0], hc[t])
+    # print(t, labels[t][0], hc[t])
     return hc[t]
 
 
@@ -156,116 +167,3 @@ def naiveDynamic(root, treeDecomposition, labels):
     result = memoisation(root, hc, treeDecomposition, labels)
     return len(result) > 0
 
-
-# if __name__ == '__main__':
-#     T = {27: [0],
-#          0: [1],
-#          1: [2],
-#          2: [3],
-#          3: [4],
-#          4: [5],
-#          5: [6],
-#          6: [7],
-#          7: [8],
-#          8: [9],
-#          9: [10],
-#          10: [11, 19],
-#          11: [12],
-#          12: [13],
-#          13: [14],
-#          14: [15],
-#          15: [16],
-#          16: [17],
-#          17: [18],
-#          18: [28],
-#          28: [],
-#          19: [20],
-#          20: [21],
-#          21: [22],
-#          22: [23],
-#          23: [24],
-#          24: [25],
-#          25: [26],
-#          26: [29],
-#          29: []
-#          }
-#
-#     bags = {27: frozenset([]),
-#             0: frozenset([0]),
-#             1: frozenset([0, 1]),
-#             2: frozenset([0, 1]),
-#             3: frozenset([1]),
-#             4: frozenset([1, 2]),
-#             5: frozenset([1, 2]),
-#             6: frozenset([3, 1, 2]),
-#             7: frozenset([3, 1, 2]),
-#             8: frozenset([1, 2, 3, 5]),
-#             9: frozenset([1, 2, 3, 5]),
-#             10: frozenset([1, 2, 3, 5]),
-#             11: frozenset([1, 2, 3, 5]),
-#             12: frozenset([2, 3, 5]),
-#             13: frozenset([2, 5]),
-#             14: frozenset([2, 4, 5]),
-#             15: frozenset([2, 4, 5]),
-#             16: frozenset([4, 5]),
-#             17: frozenset([4, 5]),
-#             18: frozenset([5]),
-#             28: frozenset([]),
-#             19: frozenset([1, 2, 3, 5]),
-#             20: frozenset([2, 3, 5]),
-#             21: frozenset([3, 5]),
-#             22: frozenset([3, 5, 6]),
-#             23: frozenset([3, 5, 6]),
-#             24: frozenset([5, 6]),
-#             25: frozenset([5, 6]),
-#             26: frozenset([6]),
-#             29: frozenset([])
-#             }
-#
-#     labels = {27: (FORGET_NODE, 0),
-#               0: (FORGET_NODE, 1),
-#               1: (INTRODUCE_EDGE_NODE, (0, 1)),
-#               2: (INTRODUCE_VERTEX_NODE, 0),
-#               3: (FORGET_NODE, 2),
-#               4: (INTRODUCE_EDGE_NODE, (1, 2)),
-#               5: (FORGET_NODE, 3),
-#               6: (INTRODUCE_EDGE_NODE, (1, 3)),
-#               7: (FORGET_NODE, 5),
-#               8: (INTRODUCE_EDGE_NODE, (2, 5)),
-#               9: (INTRODUCE_EDGE_NODE, (3, 5)),
-#               10: (JOIN_NODE, 0),
-#               11: (INTRODUCE_VERTEX_NODE, 1),
-#               12: (INTRODUCE_VERTEX_NODE, 3),
-#               13: (FORGET_NODE, 4),
-#               14: (INTRODUCE_EDGE_NODE, (2, 4)),
-#               15: (INTRODUCE_VERTEX_NODE, 2),
-#               16: (INTRODUCE_EDGE_NODE, (4, 5)),
-#               17: (INTRODUCE_VERTEX_NODE, 4),
-#               18: (INTRODUCE_VERTEX_NODE, 5),
-#               28: (LEAF_NODE, -1),
-#               19: (INTRODUCE_VERTEX_NODE, 1),
-#               20: (INTRODUCE_VERTEX_NODE, 2),
-#               21: (FORGET_NODE, 6),
-#               22: (INTRODUCE_EDGE_NODE, (3, 6)),
-#               23: (INTRODUCE_VERTEX_NODE, 3),
-#               24: (INTRODUCE_EDGE_NODE, (5, 6)),
-#               25: (INTRODUCE_VERTEX_NODE, 5),
-#               26: (INTRODUCE_VERTEX_NODE, 6),
-#               29: (LEAF_NODE, -1)
-#               }
-#
-#     G = nx.Graph()
-#     for i in range(7):
-#         G.add_node(i)
-#     G.add_edges_from([(0, 1), (1, 2), (1, 3), (2, 4), (2, 5), (3, 5), (3, 6), (4, 5), (5, 6)])
-#
-#     edges_to_add = []
-#     Tree = nx.DiGraph()
-#     for x in T.keys():
-#         Tree.add_node(x, bag=bags[x])
-#         # print(x, Tree.node[x][bag])
-#         for y in T[x]:
-#             edges_to_add.append((x, y))
-#     Tree.add_edges_from(edges_to_add)
-#
-#     print(naiveDynamic(27))
