@@ -99,16 +99,13 @@ def generateFunctionsPair(i, s):
     return left, right, True
 
 def memoisation(t, s, hc, T, labels):
-    # print(t, s, labels[t])
     if (t, s) in hc.keys():
-        # print("BEFORE REDUCE:", "(NODE:)", t, "(LABEL:)", labels[t][0], "(S_DEG:)", s, "(MATCHINGS:)", hc[(t, s)])
         return hc[(t, s)]
 
     if labels[t][0] == INTRODUCE_VERTEX_NODE:
         v = labels[t][1]
         child = [k for k in T.neighbors(t)][0]
         childResult = []
-        # print(child, v, s)
         if (v, 0) in s:
             childResult = memoisation(child, s.difference([(v, 0)]), hc, T, labels)
 
@@ -146,7 +143,6 @@ def memoisation(t, s, hc, T, labels):
         elif u_deg == 1 and v_deg == 1:
             recS = s.difference([(v, 1), (u, 1)]).union([(v, 0), (u, 0)])
             mDict = memoisation(child, recS, hc, T, labels)
-            # print(mDict)
             for m in mDict:
                 match = deepcopy(m)
                 match.update({u: v, v: u})
@@ -155,7 +151,6 @@ def memoisation(t, s, hc, T, labels):
         elif u_deg == 1 and v_deg == 2:
             recS = s.difference([(v, 2), (u, 1)]).union([(v, 1), (u, 0)])
             mDict = memoisation(child, recS, hc, T, labels)
-            # print(mDict, hc[(child, recS)])
             for m in mDict:
                 match = deepcopy(m)
                 if match == {}:
@@ -174,7 +169,6 @@ def memoisation(t, s, hc, T, labels):
         elif u_deg == 2 and v_deg == 1:
             recS = s.difference([(v, 1), (u, 2)]).union([(v, 0), (u, 1)])
             mDict = memoisation(child, recS, hc, T, labels)
-            # print(mDict, hc[(child, recS)])
             for m in mDict:
                 match = deepcopy(m)
                 if match == {}:
@@ -193,7 +187,6 @@ def memoisation(t, s, hc, T, labels):
         else:
             recS = s.difference([(v, 2), (u, 2)]).union([(v, 1), (u, 1)])
             mDict = memoisation(child, recS, hc, T, labels)
-            # print(mDict, hc[(child, recS)])
             for m in mDict:
                 match = deepcopy(m)
                 if match == {}:
@@ -274,15 +267,12 @@ def memoisation(t, s, hc, T, labels):
     elif labels[t][0] == LEAF_NODE:
         hc[(t, s)] = [{}]
 
-    # print("--------------------------------------")
     # print("BEFORE REDUCE:", "(NODE:)", t, "(LABEL:)", labels[t][0], "(S_DEG:)", s, "(MATCHINGS:)", hc[(t, s)])
+
     U = functionInverse(s, 1)
     if len(hc[(t, s)]) > 2**len(U):
         print(len(hc[(t, s)]), 2**len(U), hc[(t, s)], U, s)
         hc[(t, s)] = reduce(hc[(t, s)], frozenset(U))
-    #
-    # print("AFTER REDUCE:", "(NODE:)", t, "(LABEL:)", labels[t][0], "(S_DEG:)", s, "(MATCHINGS:)", hc[(t, s)])
-    # print("--------------------------------------")
 
     return hc[(t, s)]
 

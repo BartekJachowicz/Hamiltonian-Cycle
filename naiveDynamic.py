@@ -82,9 +82,10 @@ def memoisation(t, hc, T, labels):
                     del pair[1][u]
                     del pair[1][v]
                 else:
+                    pair[0].update({u: u_d + 1, v: v_d + 1})
                     u_prim = pair[1][u]
                     v_prim = pair[1][v]
-                    pair[1].update({u_prim: v_prim, v_prim: u_prim, u: v, v: u})
+                    pair[1].update({u_prim: v_prim, v_prim: u_prim})
             childResultPrim.append(pair)
 
         hc[t] = []
@@ -155,7 +156,7 @@ def memoisation(t, hc, T, labels):
     elif labels[t][0] == LEAF_NODE:
         hc[t] = [({}, {})]
 
-    # print(t, labels[t][0], hc[t])
+    # print(t, labels[t], hc[t])
     return hc[t]
 
 
@@ -166,4 +167,3 @@ def naiveDynamic(root, treeDecomposition, labels):
     hc = {}
     result = memoisation(root, hc, treeDecomposition, labels)
     return len(result) > 0
-

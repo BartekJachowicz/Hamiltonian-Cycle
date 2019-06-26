@@ -137,9 +137,10 @@ def memoisation(t, hc, T, labels):
                         del match[u]
                         del match[v]
                     else:
+                        k.update({u: u_d + 1, v: v_d + 1})
                         u_prim = match[u]
                         v_prim = match[v]
-                        match.update({u_prim: v_prim, v_prim: u_prim, u: v, v: u})
+                        match.update({u_prim: v_prim, v_prim: u_prim})
             childResultPrim.append((k, val))
 
         hc[t] = []
