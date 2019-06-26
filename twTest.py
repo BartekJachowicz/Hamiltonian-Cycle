@@ -205,13 +205,9 @@ def treewidth_decomp(G, heuristic=min_fill_in_heuristic):
         # update treewidth
         treewidth = max(treewidth, len(new_bag) - 1)
 
-        # add edge to decomposition (implicitly also adds the new node)
         decomp.add_edge(old_bag, new_bag)
 
     decomp = nx.convert_node_labels_to_integers(decomp, label_attribute='bag')
-    # nice_tree_decomp(out)
-    # nx.draw(decomp, with_labels=True)
-    # plt.show()
 
     return treewidth, decomp
 
@@ -232,20 +228,11 @@ def make_directed(G):
     return new_G
 
 def tree_decomposition(G):
-    # matplotlib.interactive(True)
-    # G = {0: [1], 1: [0, 2, 3], 2: [1, 4, 5], 3: [1, 4, 6], 4: [2, 3, 5, 6], 5: [2, 4], 6: [3, 4]}
-    # G = {0: [1, 2, 3, 4], 1: [0, 2, 3, 4], 2: [0, 1, 3, 4], 3
     G_nx = nx.DiGraph()
     G_nx.add_nodes_from(G.keys())
     for k, v in G.items():
         G_nx.add_edges_from(([(k, t) for t in v]))
     return treewidth_decomp(G)
-
-def x_print_tree(Tree, v, labels):
-    suc = list(Tree.successors(v))
-    print(v, Tree.node[v][bag], suc, labels[v])
-    for x in suc:
-        x_print_tree(Tree, x, labels)
 
 def make_labels(G, v, labels):
     suc = list(G.successors(v))
@@ -317,7 +304,7 @@ def decide():
     return True
 
 def generateTestGraph():
-    cycleSize = randint(3, 10)
+    cycleSize = randint(3, 40)
     edges = []
     G = nx.Graph()
     for i in range(cycleSize):
@@ -330,10 +317,10 @@ def generateTestGraph():
 
     decision = decide()
 
-    m = (cycleSize * (cycleSize - 1) / 2) - (cycleSize + 1)
+    m = (cycleSize * (cycleSize - 1) / 2) - cycleSize
     edgeNumber = 0
     if m > 0:
-        edgeNumber = randint(0, int(m/3))
+        edgeNumber = randint(0, min(int(m/2), 20))
 
     for i in range(edgeNumber):
         u, v = 0, 1
@@ -356,7 +343,7 @@ def generateTestGraph():
     return G, decision, edges
 
 def treewidthTest():
-    tests_number = randint(1, 10)
+    tests_number = randint(50, 100)
 
     for i in range(tests_number):
         print("Test number:", i)
@@ -371,15 +358,20 @@ def treewidthTest():
         make_labels(tree_decomp, root, labels)
         add_ienodes(tree_decomp, root, edges, labels)
 
-        nx.draw(tree_decomp, with_labels=True)
-        plt.show()
+        # nx.draw(tree_decomp, with_labels=True)
+        # plt.show()
 
         print("Testing started...")
+        print("Treewidth:", tw, "CORRECT ANSERW:", decision)
         tw_dynamic = naiveDynamic(root, tree_decomp, labels)
-        # rb_dynamic = rankBasedDynamic(root, tree_decomp, labels)
-
         print("NAIVE TREEWIDTH DYNAMIC:", tw_dynamic)
-        # print("RANK BASED APPROACH:", rb_dynamic)
+
+        rb_dynamic = rankBasedDynamic(root, tree_decomp, labels)
+        print("RANK BASED APPROACH:", rb_dynamic)
+
+        if rb_dynamic != decision or tw_dynamic != decision:
+            print("ANS")
+            break
         print()
 
 if __name__ == '__main__':
