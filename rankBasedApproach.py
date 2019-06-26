@@ -99,7 +99,7 @@ def generateFunctionsPair(i, s):
     return left, right, True
 
 def memoisation(t, s, hc, T, labels):
-    print(t, s, labels[t])
+    # print(t, s, labels[t])
     if (t, s) in hc.keys():
         # print("BEFORE REDUCE:", "(NODE:)", t, "(LABEL:)", labels[t][0], "(S_DEG:)", s, "(MATCHINGS:)", hc[(t, s)])
         return hc[(t, s)]
@@ -108,7 +108,7 @@ def memoisation(t, s, hc, T, labels):
         v = labels[t][1]
         child = [k for k in T.neighbors(t)][0]
         childResult = []
-        print(child, v, s)
+        # print(child, v, s)
         if (v, 0) in s:
             childResult = memoisation(child, s.difference([(v, 0)]), hc, T, labels)
 
@@ -123,7 +123,8 @@ def memoisation(t, s, hc, T, labels):
         childResult = memoisation(child, s.union([(v, 2)]), hc, T, labels)
 
         hc[(t, s)] = []
-        for match in childResult:
+        for m in childResult:
+            match = deepcopy(m)
             hc[(t, s)].append(match)
 
     elif labels[t][0] == INTRODUCE_EDGE_NODE:
@@ -145,90 +146,75 @@ def memoisation(t, s, hc, T, labels):
         elif u_deg == 1 and v_deg == 1:
             recS = s.difference([(v, 1), (u, 1)]).union([(v, 0), (u, 0)])
             mDict = memoisation(child, recS, hc, T, labels)
-            print(mDict)
+            # print(mDict)
             for m in mDict:
-                m.update({u: v, v: u})
-                if m not in matchings:
-                    matchings.append(m)
+                match = deepcopy(m)
+                match.update({u: v, v: u})
+                if match not in matchings:
+                    matchings.append(match)
         elif u_deg == 1 and v_deg == 2:
             recS = s.difference([(v, 2), (u, 1)]).union([(v, 1), (u, 0)])
             mDict = memoisation(child, recS, hc, T, labels)
-            print(mDict, hc[(child, recS)])
+            # print(mDict, hc[(child, recS)])
             for m in mDict:
-                # if m == {} or v not in m:
-                #     continue
-                # v_prim = m[v]
-                # m.update({u: v_prim, v_prim: u})
-                # del m[v]
-                # if m not in matchings:
-                #     matchings.append(m)
-                if m == {}:
-                    if m not in matchings:
-                        matchings.append(m)
+                match = deepcopy(m)
+                if match == {}:
+                    if match not in matchings:
+                        matchings.append(match)
                     continue
-                elif v not in m:
+                elif v not in match:
                     continue
-                v_prim = m[v]
-                m.update({u: v_prim, v_prim: u})
-                del m[v]
-                if m not in matchings:
-                    matchings.append(m)
+
+                v_prim = match[v]
+                match.update({u: v_prim, v_prim: u})
+                del match[v]
+                if match not in matchings:
+                    matchings.append(match)
+
         elif u_deg == 2 and v_deg == 1:
             recS = s.difference([(v, 1), (u, 2)]).union([(v, 0), (u, 1)])
             mDict = memoisation(child, recS, hc, T, labels)
-            print(mDict, hc[(child, recS)])
+            # print(mDict, hc[(child, recS)])
             for m in mDict:
-                # if m == {} or u not in m:
-                #     continue
-                # u_prim = m[u]
-                # m.update({v: u_prim, u_prim: v})
-                # del m[u]
-                # if m not in matchings:
-                #     matchings.append(m)
-                if m == {}:
-                    if m not in matchings:
-                        matchings.append(m)
+                match = deepcopy(m)
+                if match == {}:
+                    if match not in matchings:
+                        matchings.append(match)
                     continue
-                elif u not in m:
+                elif u not in match:
                     continue
-                u_prim = m[u]
-                m.update({v: u_prim, u_prim: v})
-                del m[u]
-                if m not in matchings:
-                    matchings.append(m)
+
+                u_prim = match[u]
+                match.update({v: u_prim, u_prim: v})
+                del match[u]
+                if match not in matchings:
+                    matchings.append(match)
+
         else:
             recS = s.difference([(v, 2), (u, 2)]).union([(v, 1), (u, 1)])
             mDict = memoisation(child, recS, hc, T, labels)
-            print(mDict, hc[(child, recS)])
+            # print(mDict, hc[(child, recS)])
             for m in mDict:
-                # if m == {} or (u not in m or v not in m):
-                #     continue
-                # v_prim = m[v]
-                # u_prim = m[u]
-                # if u_prim != v:
-                #     m.update({u_prim: v_prim, v_prim: u_prim})
-                # del m[u]
-                # del m[v]
-                # if m not in matchings:
-                #     matchings.append(m)
-                if m == {}:
-                    if m not in matchings:
-                        matchings.append(m)
+                match = deepcopy(m)
+                if match == {}:
+                    if match not in matchings:
+                        matchings.append(match)
                     continue
-                elif u not in m or v not in m:
+                elif u not in match or v not in match:
                     continue
-                v_prim = m[v]
-                u_prim = m[u]
+                v_prim = match[v]
+                u_prim = match[u]
                 if u_prim != v:
-                    m.update({u_prim: v_prim, v_prim: u_prim})
-                del m[u]
-                del m[v]
-                if m not in matchings:
-                    matchings.append(m)
+                    match.update({u_prim: v_prim, v_prim: u_prim})
+                del match[u]
+                del match[v]
+                if match not in matchings:
+                    matchings.append(match)
         childResult = memoisation(child, s, hc, T, labels)
 
         for m in childResult:
-            hc[(t, s)].append(m)
+            match = deepcopy(m)
+            hc[(t, s)].append(match)
         for m in matchings:
             if m not in hc[(t, s)]:
                 hc[(t, s)].append(m)
@@ -288,12 +274,12 @@ def memoisation(t, s, hc, T, labels):
     elif labels[t][0] == LEAF_NODE:
         hc[(t, s)] = [{}]
 
-    print("--------------------------------------")
-    print("BEFORE REDUCE:", "(NODE:)", t, "(LABEL:)", labels[t][0], "(S_DEG:)", s, "(MATCHINGS:)", hc[(t, s)])
-    # U = functionInverse(s, 1)
-    # if len(hc[(t, s)]) > 2**len(U):
-    #     print(len(hc[(t, s)]), 2**len(U), hc[(t, s)], U, s)
-    #     hc[(t, s)] = reduce(hc[(t, s)], frozenset(U))
+    # print("--------------------------------------")
+    # print("BEFORE REDUCE:", "(NODE:)", t, "(LABEL:)", labels[t][0], "(S_DEG:)", s, "(MATCHINGS:)", hc[(t, s)])
+    U = functionInverse(s, 1)
+    if len(hc[(t, s)]) > 2**len(U):
+        print(len(hc[(t, s)]), 2**len(U), hc[(t, s)], U, s)
+        hc[(t, s)] = reduce(hc[(t, s)], frozenset(U))
     #
     # print("AFTER REDUCE:", "(NODE:)", t, "(LABEL:)", labels[t][0], "(S_DEG:)", s, "(MATCHINGS:)", hc[(t, s)])
     # print("--------------------------------------")
