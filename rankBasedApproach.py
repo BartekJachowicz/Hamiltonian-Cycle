@@ -1,5 +1,4 @@
 import itertools
-import networkx as nx
 from copy import deepcopy
 
 LEAF_NODE, INTRODUCE_VERTEX_NODE, INTRODUCE_EDGE_NODE = "Leaf node", "Introduce vertex node", "Introduce edge node"
@@ -20,6 +19,7 @@ def matchingJoin(u, visited, m1, m2, cycle, one):
 
         if u in visited and visited[u]:
             cycle = True
+            break
 
     return u, cycle, visited
 def cuts(U, v):
@@ -62,9 +62,9 @@ def reduce(A, U):
     return result
 def functionInverse(f, x):
     result = []
-    for t in f:
-        if t[1] == x:
-            result.append(t[0])
+    for tup in f:
+        if tup[1] == x:
+            result.append(tup[0])
     return result
 def fromDecimal(n, length, base):
     nums = [0 for x in range(length)]
@@ -77,23 +77,44 @@ def fromDecimal(n, length, base):
         it += 1
     nums.reverse()
     return nums
+def toDecimal(nums, base):
+    power = base ** (len(nums) - 1)
+    result = 0
+    for tup in nums:
+        result += tup[1] * power
+        power = power / base
+    return result
+def generateFunctionsPair(i, s):
+    right = []
+    left = fromDecimal(i, len(s), 3)
+
+    j = 0
+    for tup in s:
+        if left[j] > tup[1]:
+            return [], [], False
+        else:
+            right.append(tup[1] - left[j])
+        j += 1
+
+    return left, right, True
 
 def memoisation(t, s, hc, T, labels):
-    # print(t, s, labels[t])
+    print(t, s, labels[t])
     if (t, s) in hc.keys():
+        # print("BEFORE REDUCE:", "(NODE:)", t, "(LABEL:)", labels[t][0], "(S_DEG:)", s, "(MATCHINGS:)", hc[(t, s)])
         return hc[(t, s)]
 
     if labels[t][0] == INTRODUCE_VERTEX_NODE:
         v = labels[t][1]
         child = [k for k in T.neighbors(t)][0]
         childResult = []
+        print(child, v, s)
         if (v, 0) in s:
             childResult = memoisation(child, s.difference([(v, 0)]), hc, T, labels)
 
         hc[(t, s)] = []
         for m in childResult:
             match = deepcopy(m)
-            # match.update({v: v})
             hc[(t, s)].append(match)
 
     elif labels[t][0] == FORGET_NODE:
@@ -116,8 +137,6 @@ def memoisation(t, s, hc, T, labels):
             if tup[0] == v:
                 v_deg = tup[1]
 
-        # print(u, u_deg, v, v_deg)
-
         hc[(t, s)] = []
         matchings = []
 
@@ -126,6 +145,7 @@ def memoisation(t, s, hc, T, labels):
         elif u_deg == 1 and v_deg == 1:
             recS = s.difference([(v, 1), (u, 1)]).union([(v, 0), (u, 0)])
             mDict = memoisation(child, recS, hc, T, labels)
+            print(mDict)
             for m in mDict:
                 m.update({u: v, v: u})
                 if m not in matchings:
@@ -133,8 +153,20 @@ def memoisation(t, s, hc, T, labels):
         elif u_deg == 1 and v_deg == 2:
             recS = s.difference([(v, 2), (u, 1)]).union([(v, 1), (u, 0)])
             mDict = memoisation(child, recS, hc, T, labels)
+            print(mDict, hc[(child, recS)])
             for m in mDict:
-                if m == {} or v not in m:
+                # if m == {} or v not in m:
+                #     continue
+                # v_prim = m[v]
+                # m.update({u: v_prim, v_prim: u})
+                # del m[v]
+                # if m not in matchings:
+                #     matchings.append(m)
+                if m == {}:
+                    if m not in matchings:
+                        matchings.append(m)
+                    continue
+                elif v not in m:
                     continue
                 v_prim = m[v]
                 m.update({u: v_prim, v_prim: u})
@@ -144,8 +176,20 @@ def memoisation(t, s, hc, T, labels):
         elif u_deg == 2 and v_deg == 1:
             recS = s.difference([(v, 1), (u, 2)]).union([(v, 0), (u, 1)])
             mDict = memoisation(child, recS, hc, T, labels)
+            print(mDict, hc[(child, recS)])
             for m in mDict:
-                if m == {} or u not in m:
+                # if m == {} or u not in m:
+                #     continue
+                # u_prim = m[u]
+                # m.update({v: u_prim, u_prim: v})
+                # del m[u]
+                # if m not in matchings:
+                #     matchings.append(m)
+                if m == {}:
+                    if m not in matchings:
+                        matchings.append(m)
+                    continue
+                elif u not in m:
                     continue
                 u_prim = m[u]
                 m.update({v: u_prim, u_prim: v})
@@ -155,16 +199,32 @@ def memoisation(t, s, hc, T, labels):
         else:
             recS = s.difference([(v, 2), (u, 2)]).union([(v, 1), (u, 1)])
             mDict = memoisation(child, recS, hc, T, labels)
+            print(mDict, hc[(child, recS)])
             for m in mDict:
-                if m == {} or (u not in m or v not in m):
+                # if m == {} or (u not in m or v not in m):
+                #     continue
+                # v_prim = m[v]
+                # u_prim = m[u]
+                # if u_prim != v:
+                #     m.update({u_prim: v_prim, v_prim: u_prim})
+                # del m[u]
+                # del m[v]
+                # if m not in matchings:
+                #     matchings.append(m)
+                if m == {}:
+                    if m not in matchings:
+                        matchings.append(m)
+                    continue
+                elif u not in m or v not in m:
                     continue
                 v_prim = m[v]
                 u_prim = m[u]
                 if u_prim != v:
-                    m.update({u_prim: v_prim, v_prim: u_prim, u: v, v: u})
+                    m.update({u_prim: v_prim, v_prim: u_prim})
+                del m[u]
+                del m[v]
                 if m not in matchings:
                     matchings.append(m)
-
         childResult = memoisation(child, s, hc, T, labels)
 
         for m in childResult:
@@ -179,12 +239,16 @@ def memoisation(t, s, hc, T, labels):
 
         hc[(t, s)] = []
         for i in range(3**len(s)):
-            l, r = [], []
-            nums = fromDecimal(i, len(s), 3)
+            nums_left, nums_right, check = generateFunctionsPair(i, s)
+
+            if not check:
+                continue
+
             j = 0
+            l, r = [], []
             for tup in s:
-                l.append((tup[0], nums[j]))
-                r.append((tup[0], nums[j]))
+                l.append((tup[0], nums_left[j]))
+                r.append((tup[0], nums_right[j]))
                 j += 1
 
             firstChildResult = memoisation(t_1, frozenset(l), hc, T, labels)
@@ -224,14 +288,14 @@ def memoisation(t, s, hc, T, labels):
     elif labels[t][0] == LEAF_NODE:
         hc[(t, s)] = [{}]
 
+    print("--------------------------------------")
     print("BEFORE REDUCE:", "(NODE:)", t, "(LABEL:)", labels[t][0], "(S_DEG:)", s, "(MATCHINGS:)", hc[(t, s)])
-
     # U = functionInverse(s, 1)
     # if len(hc[(t, s)]) > 2**len(U):
     #     print(len(hc[(t, s)]), 2**len(U), hc[(t, s)], U, s)
     #     hc[(t, s)] = reduce(hc[(t, s)], frozenset(U))
-
-    # print("AFTER REDUCE:", t, labels[t][0], bags[t], hc[(t, s)])
+    #
+    # print("AFTER REDUCE:", "(NODE:)", t, "(LABEL:)", labels[t][0], "(S_DEG:)", s, "(MATCHINGS:)", hc[(t, s)])
     # print("--------------------------------------")
 
     return hc[(t, s)]
@@ -245,4 +309,3 @@ def rankBasedDynamic(root, treeDecomposition, labels):
     s = frozenset([])
     result = memoisation(root, s, hc, treeDecomposition, labels)
     return len(result) > 0
-
