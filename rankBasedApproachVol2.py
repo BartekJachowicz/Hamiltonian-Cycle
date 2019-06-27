@@ -27,7 +27,11 @@ def cuts(U, v):
     for i in range(1, len(U) + 1):
         out.extend([(frozenset(V1), frozenset(U.difference(V1))) for V1 in itertools.combinations(U, i) if v in V1])
     return out
+
 def reduce(A, U):
+    if len(A) < len(U):
+        return A
+
     if not U:
         return A
     v = next(iter(U))
@@ -69,6 +73,7 @@ def functionInverse(f, x):
 
 
 def memoisation(t, hc, T, labels):
+    # print(t, labels[t])
     if t in hc.keys():
         return hc[t]
 
@@ -82,8 +87,8 @@ def memoisation(t, hc, T, labels):
             k = deepcopy(tup[0])
             val = deepcopy(tup[1])
             k.update({v: 0})
-            for match in val:
-                match.update({v: v})
+            # for match in val:
+            #     match.update({v: v})
             hc[t].append((k, val))
 
     elif labels[t][0] == FORGET_NODE:
@@ -224,17 +229,15 @@ def memoisation(t, hc, T, labels):
     elif labels[t][0] == LEAF_NODE:
         hc[t] = [({}, [{}])]
 
-    # print(t, labels[t][0], hc[t])
+    hcReduced = []
+    for tup in hc[t]:
+        U = functionInverse(tup[0], 1)
+        newMatchSet = reduce(tup[1], frozenset(U))
+        hcReduced.append((tup[0], newMatchSet))
 
-    # hcReduced = []
-    # for tup in hc[t]:
-    #     U = functionInverse(tup[0], 1)
-    #     # if len(tup[1]) > 2 ** len(U):
-    #     #     print("REDUCE:", len(tup[1]), 2 ** len(U), tup[1], U, tup[0])
-    #     newMatchSet = reduce(tup[1], frozenset(U))
-    #     hcReduced.append((tup[0], newMatchSet))
-    # hc[t] = hcReduced
+    hc[t] = hcReduced
 
+    # print("Return:", t, labels[t])
     return hc[t]
 
 

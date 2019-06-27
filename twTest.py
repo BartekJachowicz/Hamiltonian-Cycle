@@ -1,10 +1,12 @@
 from naiveDynamic import naiveDynamic
 from rankBasedApproach import rankBasedDynamic
+from rankBasedApproachVol2 import rankBasedDynamicVol2
 from random import randint
 import itertools
 import sys
 import networkx as nx
 import matplotlib.pyplot as plt
+import time
 
 
 ########################
@@ -289,7 +291,6 @@ def add_ienode(Tree, v, edges, labels):
 def add_ienodes(Tree, root, edges, labels):
     add_ienode(Tree, root, edges, labels)
 
-
 def x_print_tree(Tree, v, labels):
     suc = list(Tree.successors(v))
     print(v, Tree.node[v][bag], suc, labels[v])
@@ -320,7 +321,7 @@ def generateTestGraph():
     m = (cycleSize * (cycleSize - 1) / 2) - cycleSize
     edgeNumber = 0
     if m > 0:
-        edgeNumber = randint(0, min(int(m/2), 20))
+        edgeNumber = randint(0, min(int(m/3), 50))
 
     for i in range(edgeNumber):
         u, v = 0, 1
@@ -343,7 +344,7 @@ def generateTestGraph():
     return G, decision, edges
 
 def treewidthTest():
-    tests_number = randint(50, 100)
+    tests_number = 10
 
     for i in range(tests_number):
         print("Test number:", i)
@@ -361,15 +362,25 @@ def treewidthTest():
         # nx.draw(tree_decomp, with_labels=True)
         # plt.show()
 
+        if tw > 12:
+            continue
+
         print("Testing started...")
         print("Treewidth:", tw, "CORRECT ANSERW:", decision)
-        tw_dynamic = naiveDynamic(root, tree_decomp, labels)
-        print("NAIVE TREEWIDTH DYNAMIC:", tw_dynamic)
+        if tw < 8:
+            start = time.time()
+            tw_dynamic = naiveDynamic(root, tree_decomp, labels)
+            end = time.time()
+            print("NAIVE TREEWIDTH DYNAMIC:", tw_dynamic, "TIME:", (end - start) * 1000)
+        else:
+            tw_dynamic = decision
 
-        rb_dynamic = rankBasedDynamic(root, tree_decomp, labels)
-        print("RANK BASED APPROACH:", rb_dynamic)
+        start = time.time()
+        rb_dynamic_2 = rankBasedDynamicVol2(root, tree_decomp, labels)
+        end = time.time()
+        print("RANK BASED APPROACH VOL.2:", rb_dynamic_2, "TIME:", (end - start) * 1000)
 
-        if rb_dynamic != decision or tw_dynamic != decision:
+        if tw_dynamic != decision or rb_dynamic_2 != decision:
             print("ANS")
             break
         print()
