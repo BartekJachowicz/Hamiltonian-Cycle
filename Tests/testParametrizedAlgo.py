@@ -1,11 +1,9 @@
-from naiveDynamic import naiveDynamic
-from rankBasedApproach import rankBasedDynamic
-from rankBasedApproachVol2 import rankBasedDynamicVol2
+from Algorithms.naiveDynamic import naiveDynamic
+from Algorithms.rankBasedApproachVol2 import rankBasedDynamicVol2
 from random import randint
 import itertools
 import sys
 import networkx as nx
-import matplotlib.pyplot as plt
 import time
 
 
@@ -321,7 +319,7 @@ def generateTestGraph():
     m = (cycleSize * (cycleSize - 1) / 2) - cycleSize
     edgeNumber = 0
     if m > 0:
-        edgeNumber = randint(0, min(int(m/3), 50))
+        edgeNumber = randint(0, min(int(m/3), 100))
 
     for i in range(edgeNumber):
         u, v = 0, 1
@@ -341,49 +339,37 @@ def generateTestGraph():
         G.remove_edge(cycleSize, 0)
         edges.remove((cycleSize, 0))
 
-    return G, decision, edges
+    return G, edges
 
-def treewidthTest():
-    tests_number = 10
+def testParametrizedAlgoriths(graph, edges):
+    tw, tree_decomp = treewidth_decomp(graph)
+    tree_decomp = make_directed(tree_decomp)
+    root = nice_tree_decomp(tree_decomp, 0)
 
-    for i in range(tests_number):
-        print("Test number:", i)
-        G, decision, edges = generateTestGraph()
-        print(decision, G.edges(), '\n')
+    labels = {}
+    make_labels(tree_decomp, root, labels)
+    add_ienodes(tree_decomp, root, edges, labels)
 
-        tw, tree_decomp = treewidth_decomp(G)
-        tree_decomp = make_directed(tree_decomp)
-        root = nice_tree_decomp(tree_decomp, 0)
+    # nx.draw(tree_decomp, with_labels=True)
+    # plt.show()
 
-        labels = {}
-        make_labels(tree_decomp, root, labels)
-        add_ienodes(tree_decomp, root, edges, labels)
+    print("GRAPH EDGES:", graph.edges())
+    print("TREEWIDTH:", tw, "VERTEX NUMBER:", len(graph.nodes()), "EDGE NUMBER:", len(graph.edges()))
 
-        # nx.draw(tree_decomp, with_labels=True)
-        # plt.show()
+    print("NAIVE TREEWIDTH DYNAMIC")
+    start = time.time()
+    tw_dynamic = naiveDynamic(root, tree_decomp, labels)
+    end = time.time()
+    print("Answer:", tw_dynamic, "Time:", (end - start) * 1000)
 
-        if tw > 12:
-            continue
+    print("RANK BASED APPROACH")
+    start = time.time()
+    rb_dynamic_2 = rankBasedDynamicVol2(root, tree_decomp, labels)
+    end = time.time()
+    print("Answer", rb_dynamic_2, "TIME:", (end - start) * 1000)
 
-        print("Testing started...")
-        print("Treewidth:", tw, "CORRECT ANSERW:", decision)
-        if tw < 8:
-            start = time.time()
-            tw_dynamic = naiveDynamic(root, tree_decomp, labels)
-            end = time.time()
-            print("NAIVE TREEWIDTH DYNAMIC:", tw_dynamic, "TIME:", (end - start) * 1000)
-        else:
-            tw_dynamic = decision
-
-        start = time.time()
-        rb_dynamic_2 = rankBasedDynamicVol2(root, tree_decomp, labels)
-        end = time.time()
-        print("RANK BASED APPROACH VOL.2:", rb_dynamic_2, "TIME:", (end - start) * 1000)
-
-        if tw_dynamic != decision or rb_dynamic_2 != decision:
-            print("ANS")
-            break
-        print()
+    print()
 
 if __name__ == '__main__':
-    treewidthTest()
+    G, e = generateTestGraph()
+    testParametrizedAlgoriths(G, e)
