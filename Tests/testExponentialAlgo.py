@@ -64,7 +64,6 @@ def generateTest():
 if __name__ == '__main__':
     g = generateTest()
 
-    print("GRAPH EDGES:", g.edges)
     print("VERTEX NUMBER:", len(g.nodes()), "EDGE NUMBER:", len(g.edges()))
 
     testExponentialAlgorithms(g)

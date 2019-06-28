@@ -353,7 +353,6 @@ def testParametrizedAlgoriths(graph, edges):
     # nx.draw(tree_decomp, with_labels=True)
     # plt.show()
 
-    print("GRAPH EDGES:", graph.edges())
     print("TREEWIDTH:", tw, "VERTEX NUMBER:", len(graph.nodes()), "EDGE NUMBER:", len(graph.edges()))
 
     print("NAIVE TREEWIDTH DYNAMIC")
