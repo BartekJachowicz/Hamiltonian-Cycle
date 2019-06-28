@@ -29,7 +29,7 @@ def cuts(U, v):
     return out
 
 def reduce(A, U):
-    if len(A) < len(U):
+    if len(A) < 2**(len(U) - 1):
         return A
 
     if not U:
@@ -237,7 +237,7 @@ def memoisation(t, hc, T, labels):
 
     hc[t] = hcReduced
 
-    # print("Return:", t, labels[t])
+    # print("Return:", t, labels[t], hc[t])
     return hc[t]
 
 

@@ -33,9 +33,10 @@ def memoisation(t, hc, T, labels):
 
         childResult = memoisation(child, hc, T, labels)
         hc[t] = []
-        for pair in childResult:
+        for p in childResult:
+            pair = deepcopy(p)
             pair[0].update({v: 0})
-            pair[1].update({v: v})
+            # pair[1].update({v: v})
             hc[t].append(pair)
 
     elif labels[t][0] == FORGET_NODE:
@@ -45,7 +46,8 @@ def memoisation(t, hc, T, labels):
         childResult = memoisation(child, hc, T, labels)
         hc[t] = []
 
-        for pair in childResult:
+        for p in childResult:
+            pair = deepcopy(p)
             if pair[0][v] == 2:
                 del pair[0][v]
                 hc[t].append(pair)
@@ -89,7 +91,8 @@ def memoisation(t, hc, T, labels):
             childResultPrim.append(pair)
 
         hc[t] = []
-        for pair in childResult:
+        for p in childResult:
+            pair = deepcopy(p)
             if pair not in hc[t]:
                 hc[t].append(pair)
         for pair in childResultPrim:
@@ -126,6 +129,16 @@ def memoisation(t, hc, T, labels):
                 if not flag:
                     continue
 
+                allDone = True
+                for w in p[0].keys():
+                    if p[0][w] != 2:
+                        allDone = False
+                        break
+
+                if allDone:
+                    hc[t].append(p)
+                    continue
+
                 for v in visited.keys():
                     if visited[v]:
                         continue
@@ -156,7 +169,7 @@ def memoisation(t, hc, T, labels):
     elif labels[t][0] == LEAF_NODE:
         hc[t] = [({}, {})]
 
-    # print(t, labels[t])
+    # print(t, labels[t], hc[t])
     return hc[t]
 
 
